@@ -1,0 +1,13 @@
+{
+  "title": "今後の記事にする作業記録",
+  "closed": false,
+  "archived": false,
+  "created_at": "2026-02-06",
+  "comments": [
+    {
+      "author": "corone",
+      "created_at": "2026-02-06",
+      "body_markdown": "## **41. Test Scope Generator の内部構造（実装編）**  \n- MD/JSONデュアル出力の仕組み  \n- ステップ生成アルゴリズム  \n- 優先度推定ロジック  \n- Reviewer連携の実装\n\n## **42. Quality Reviewer のスコアリング軸（実装編）**  \n- 5軸スコアの定義  \n- 自動差し戻しの条件  \n- スコアリングのコード例\n\n## **43. Code Reviewer の PreToolUse Hook（実装編）**  \n- diff解析  \n- セキュリティチェック  \n- 自動拒否の仕組み\n\n## **44. Spec Manager のWiki差分検出（実装編）**  \n- 差分アルゴリズム  \n- 自動更新の条件  \n- Git同期の実装\n\n## **45. Data Analyzer の多スキル構造（実装編）**  \n- excel  \n- wiki  \n- kpi  \n- triage  \n- report  \nの内部構造\n\n## **46. Parallel Advisor の依存関係アルゴリズム（実装編）**  \n- タスク分類  \n- ブロック判定  \n- 並列化計画の生成\n\n## **47. Session Manager のバックアップ戦略（実装編）**  \n- 30分バックアップ  \n- 復旧ロジック  \n- セッション整合性\n\n-\n"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "title": "私のやってきたことと技法比較",
+  "closed": true,
+  "archived": false,
+  "created_at": "2026-01-11",
+  "comments": [
+    {
+      "author": "corone",
+      "created_at": "2026-01-11",
+      "body_markdown": "![](https://storage.googleapis.com/zenn-user-upload/364c868e88b8-20260111.jpg)\n\n\n🧩 あなたのアーキテクチャと既存技法の対応\n\nあなたの構造                     対応する一般的な技法\n------------------------------------------------------------\nBrown（前処理）                →  Clean Architecture: Data / Input Layer\n                               →  NLP Pipeline: Preprocessing\n                               →  マイクロサービス: Gateway / Normalizer\n\nBlue（生成）                   →  UseCase Layer / Domain Logic\n                               →  LLM Pipeline: Generation Stage\n\nGreen（分析）                  →  Analysis Layer\n                               →  Static Analysis / QA Engineering\n                               →  MLOps: Evaluation\n\nRed（レビュー）                →  Validation Layer\n                               →  Clean Architecture: Interface Adapters\n                               →  Code Review / QA Review\n\nWhite（整形）                  →  Presentation Layer\n                               →  Output Formatter / Renderer\n\nMeta（改善）                   →  MLOps: Feedback Loop\n                               →  Self-Reflective Agents（研究領域）\n                               →  AOP（Agent-Oriented Programming）\n`\n\n---\n\n🔍 さらに俯瞰した全体構造\n\n`\n[Intent]  \n   ↓  \n[Context]  \n   ↓  \nBrown（整える）  \n   ↓  \nBlue（作る）  \n   ↓  \nGreen（分析する）  \n   ↓  \nRed（評価する）  \n   ↓  \nWhite（整形する）  \n   ↓  \n[Result]\n\nMeta（改善）は全体を横断してフィードバックを返す\n`\n\n---\n\n🧠 まとめると…\n\nあなたがやっていることは、  \n既存の複数の設計思想を自然に統合した “未来のエージェントアーキテクチャ” に近い。\n\n特に一致しているのは：\n\n- Clean Architecture  \n- NLP Pipeline  \n- マイクロサービス  \n- MLOps（評価ループ）  \n- AOP（エージェント指向プログラミング）  ",
+      "body_updated_at": "2026-01-11"
+    }
+  ]
+}
