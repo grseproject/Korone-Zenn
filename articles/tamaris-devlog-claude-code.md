@@ -27,6 +27,10 @@ https://tamaris.pages.dev/
 - モードは3種類：ノルマモード / スコアモード / ゆで卵モード（時間経過で卵が硬質化）
 - クリアを重ねるとレシピ図鑑に料理がコレクションされる
 
+| タイトル | ゲーム画面 |
+| --- | --- |
+| ![タイトル画面](/images/tamaris/title.png) | ![ゲーム画面](/images/tamaris/game.png) |
+
 技術構成はシンプルです。
 
 | 項目 | 採用技術 |
@@ -36,6 +40,7 @@ https://tamaris.pages.dev/
 | BGM・効果音 | WebAudio でリアルタイム生成（音源ファイルなし） |
 | ホスティング | Cloudflare Pages |
 | 統計収集 | Pages Functions + D1 |
+| 開発環境 | Claude Code（デスクトップアプリ、モデルは Claude Fable 5） |
 
 ## Claude Codeとの分業 🤝
 
@@ -52,6 +57,31 @@ https://tamaris.pages.dev/
 
 音源ファイルを一切使わず、WebAudio で ♩=76 の Cmaj7→Am7→Fmaj7→G ループのゆるいBGMを生成しています。落下時のホイッスル、着地の「ドスッ」という低域の効いた音もすべてコードです。「ゆるい雰囲気で」と伝えたらコード進行から提案してくれました。
 
+BGMの正体はこれだけ。ベースとメロディの音符データを、先読みスケジューラで予約し続けています。
+
+```js
+const beat = 60 / 76;   // ♩=76 のゆったりテンポ
+const loopBeats = 16;   // 4コード×4拍で1ループ
+
+// ベース（各コードのルート音）: C3 → A2 → F2 → G2
+const bass = [[0, 130.81], [4, 110.00], [8, 87.31], [12, 98.00]];
+// メロディ（Cメジャーペンタトニック中心、隙間多めでゆるく）
+const mel = [
+  [0, 329.63, 1.2], [2, 392.00, 0.8], [3, 440.00, 1.5],
+  // ...
+];
+
+// 先読みスケジューラ：ループの終わりが近づいたら次のループを予約する
+state.timer = setInterval(() => {
+  if (this.ctx.currentTime > state.nextLoopStart + loopBeats * beat - 1.5) {
+    state.nextLoopStart += loopBeats * beat;
+    scheduleLoop(state.nextLoopStart);
+  }
+}, 400);
+```
+
+`setInterval` を直接メトロノームにすると精度が足りずヨレるので、「AudioContext の時計で少し先の音を予約しておく」のがポイントです。
+
 ### 😱 ゲームオーバーは理由別に演出
 
 殻の詰まり・割りすぎなど敗因ごとに見出し・色・シェフの怒号が変わります。敗因が伝わるとリトライの動機になる、という狙いです。
@@ -59,6 +89,16 @@ https://tamaris.pages.dev/
 ### 📊 統計駆動でバランス調整
 
 ゲームバランスは感覚ではなく統計で調整する方針にしました。Pages Functions + D1 で匿名イベント（clear / gameover / abandon / session / error）を収集し、`./stats.sh` で集計レポートが出ます。リリース後、実際に「ノルマがきつい」というデータと体感からステージノルマを 30/40/50 → 15/25/40 に緩和しました。
+
+送信側のクライアントは10行程度です。ページ離脱時でも届くよう `sendBeacon` を優先しています。
+
+```js
+send(payload) {
+  navigator.sendBeacon?.('/api/event', JSON.stringify(payload))
+    || fetch('/api/event', { method: 'POST', body: JSON.stringify(payload), keepalive: true })
+         .catch(() => {});
+}
+```
 
 ## リリース翌日の改善 🔧
 
@@ -72,9 +112,59 @@ Claude Code と仕様を往復して、こう変えました。
 - 未解放の料理はクリア画面でもシルエット表示＋「なにかが完成した…？」
 - 代わりに、ノルマモードは続きのステージから再開できるように（他のモードで遊ぶとリセット）
 
+| クリア画面 | レシピ図鑑 |
+| --- | --- |
+| ![クリア画面](/images/tamaris/clear.png) | ![レシピ図鑑（未解放はシルエット）](/images/tamaris/recipe.png) |
+
+解放ロジックは localStorage ベースで、図鑑側はこれだけです。
+
+```js
+// 解放はノルマモードの全クリア（ステージ3クリア）回数で判定する。
+// 1周目→1品 / 2周目→2品 / 3周目→3品。ステージ1の周回では貯まらない。
+const RecipeBook = {
+  allClearCount() {
+    return parseInt(localStorage.getItem(ALL_CLEAR_COUNT_KEY) ?? '0', 10) || 0;
+  },
+  unlockedCount() {
+    return Math.min(RecipeBook.allClearCount(), STAGES.length);
+  },
+};
+
+// クリア画面：図鑑で未解放の料理は完成品を見せない（解放時のサプライズを守る）
+const dishUnlocked = this.stageIndex < RecipeBook.unlockedCount();
+if (!dishUnlocked) dish.setTintFill(0x9e937d); // シルエット表示
+```
+
 この仕様、最初に私が伝えた案を Claude が実装し始めたところで「いや、そうじゃなくて」と2回ひっくり返しています。それでも会話で追従してくれるので、仕様を文書化してから渡すより速かったです。
 
 検証も Claude Code がブラウザ自動化でローカル環境を操作し、「ステージ1周回では図鑑が貯まらない」「全クリアで解放演出が出る」「再開ポイントがスコア持ち越しで動く」まで確認してからデプロイしました。
+
+## バグとメンテナンスを見据えた設計 🛠️
+
+「作って終わり」にしないため、最初から運用を意識した作りにしています。
+
+### あえてバンドラを使わない
+
+Phaser 3 + プレーンJSで、webpack も Vite もありません。`build.sh` は dist/ にファイルをコピーするだけ。個人開発の小規模ゲームでは「ビルドが壊れて開発が止まる」リスクをゼロにする方が価値がありました。ソースがそのまま配信されるので、本番の挙動 = 手元のコードです。
+
+### 本番エラーも統計イベントで拾う
+
+統計基盤は遊ばれ方だけでなく `error` イベントも収集しています。`window.onerror` で拾った例外がD1に届くので、ユーザーからの報告がなくても本番のバグに気づけます。実際、リリース翌日の「割りすぎゲージが消えたかも？」という私の体感報告に対しても、Claude Code がコードを調査して「バグなし・演出の見間違いの可能性が高い」と切り分けてくれました。
+
+### 壊れたデータを前提にする
+
+進捗は localStorage 保存なので、壊れたJSONや古いキーが残る前提で書いています。
+
+```js
+try {
+  const saved = JSON.parse(localStorage.getItem(QUOTA_RESUME_KEY));
+  if (saved && Number.isInteger(saved.stage) && saved.stage > 0) this.resume = saved;
+} catch (e) { /* 壊れた保存データは無視 */ }
+```
+
+### 記録を残す
+
+仕様変更の経緯は作業記録（worklog）とコミットメッセージに、商標調査のような開発以外の判断も企画書フォルダにメモとして残しています。数ヶ月後の自分（とClaude）が「なぜこの仕様なのか」を再構築できるようにするためです。
 
 ## おまけ：名前の商標調査 ⚖️
 
