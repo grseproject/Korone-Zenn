@@ -19,7 +19,7 @@ published: false
 
 | AI | モデル |
 |---|---|
-| Claude | <!-- TODO: モデル名 --> |
+| Claude | Opus 5.5 |
 | Codex | 6-sol |
 | Gemini | 3.6 Flash |
 
