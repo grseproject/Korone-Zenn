@@ -8,7 +8,7 @@ topics:
   - "codex"
   - "gemini"
   - "llm"
-published: false
+published: true
 ---
 
 # 🔍 サイゼリヤの間違い探しをClaude・Codex・Geminiにやらせて、レポートを書いてもらった
