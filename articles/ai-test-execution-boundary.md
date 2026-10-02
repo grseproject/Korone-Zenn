@@ -7,7 +7,7 @@ topics:
   - "codex"
   - "テスト自動化"
   - "設計"
-published: false
+published: true
 ---
 
 ## 🍔 はじめに
