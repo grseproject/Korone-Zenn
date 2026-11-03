@@ -8,7 +8,7 @@ topics:
   - "qa"
   - "testing"
   - "multiagent"
-published: false
+published: true
 ---
 
 ## 🍔 はじめに
